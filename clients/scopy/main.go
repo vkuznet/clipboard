@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	configPath := flag.String("config", "config.json", "Path to the configuration file")
+	configPath := flag.String("config", utils.ConfigLocation(), "configuration file")
 	data := flag.String("data", "", "Data to copy")
 	flag.Parse()
 

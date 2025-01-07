@@ -5,8 +5,10 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
+	"net"
 )
 
 func decodeHex(s string) ([]byte, error) {
@@ -61,4 +63,59 @@ func Generate32ByteKey(secret string) []byte {
 	hash := sha256.Sum256([]byte(secret))
 	// Return the hash as a 32-byte key
 	return hash[:]
+}
+
+// GenerateRandomString generates a random string of the specified number of bytes.
+func GenerateRandomString(numBytes int) (string, error) {
+	if numBytes <= 0 {
+		return "", fmt.Errorf("number of bytes must be greater than zero")
+	}
+
+	// Create a byte slice to hold random bytes
+	bytes := make([]byte, numBytes)
+
+	// Fill the slice with random bytes
+	if _, err := rand.Read(bytes); err != nil {
+		return "", fmt.Errorf("failed to generate random bytes: %w", err)
+	}
+
+	// Convert bytes to a hexadecimal string
+	return hex.EncodeToString(bytes), nil
+}
+
+// GenerateSecret generates a persistent secret string based on the machine's hardware.
+// It accepts the number of bytes `size` to generate the secret.
+// The secret will be consistent across restarts but unique to the machine.
+func GenerateSecret(size int) (string, error) {
+	if size <= 0 {
+		return "", fmt.Errorf("size must be greater than 0")
+	}
+
+	// Get hardware-specific information (e.g., MAC address)
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		return "", fmt.Errorf("failed to retrieve network interfaces: %w", err)
+	}
+
+	var macAddresses string
+	for _, iface := range interfaces {
+		if len(iface.HardwareAddr) > 0 {
+			macAddresses += iface.HardwareAddr.String()
+		}
+	}
+
+	if macAddresses == "" {
+		return "", fmt.Errorf("no MAC address found on the system")
+	}
+
+	// Hash the MAC address using SHA256 to derive a deterministic secret
+	hash := sha256.Sum256([]byte(macAddresses))
+	hashHex := hex.EncodeToString(hash[:])
+
+	// Trim the hash to the desired size
+	if size > len(hashHex) {
+		return "", fmt.Errorf("requested size exceeds maximum hash size of %d", len(hashHex))
+	}
+
+	return hashHex[:size], nil
 }

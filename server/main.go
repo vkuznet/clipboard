@@ -6,13 +6,15 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 
 	utils "github.com/vkuznet/clipboard/utils"
 )
 
 func main() {
-	configPath := flag.String("config", "config.json", "Path to the configuration file")
+	configPath := flag.String("config", utils.ConfigLocation(), "configuration file")
 	flag.Parse()
 
 	config, err := utils.LoadConfig(*configPath)
@@ -35,6 +37,22 @@ func main() {
 	}
 	defer clipboard.SaveHistory(config.HistoryFile)
 
+	// Channel to listen for termination signals
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+
+	// Graceful shutdown handling
+	go func() {
+		<-sigChan
+		fmt.Println("\nReceived termination signal. Saving clipboard history...")
+		if err := clipboard.SaveHistory(config.HistoryFile); err != nil {
+			fmt.Println("Error saving clipboard history:", err)
+		}
+		fmt.Printf("History saved to %s\n", config.HistoryFile)
+		os.Exit(0)
+	}()
+
+	// setup HTTP handlers
 	http.HandleFunc("/copy", clipboard.HandleCopy)
 	http.HandleFunc("/paste", clipboard.HandlePaste)
 	http.HandleFunc("/history", clipboard.HandleHistory)

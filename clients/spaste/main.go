@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	configPath := flag.String("config", "config.json", "Path to the configuration file")
+	configPath := flag.String("config", utils.ConfigLocation(), "configuration file")
 	item := flag.String("item", "", "clipboard item")
 	flag.Parse()
 

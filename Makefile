@@ -1,13 +1,21 @@
-.PHONY: all clean
+.PHONY: all
 
 GO := go
 BINDIR := .
-CERT_DIR := certs
+
+# certs parts
+CERT_DIR := $(HOME)/.clipboard/certs
 SERVER_KEY := $(CERT_DIR)/server.key
 SERVER_CRT := $(CERT_DIR)/server.crt
 
+# config parts
+CONFIG_DIR=$(HOME)/.clipboard
+CONFIG_FILE=$(CONFIG_DIR)/config.json
+HISTORY_FILE=$(CONFIG_DIR)/shistory.json
+CERTS_DIR=$(CONFIG_DIR)/certs
 
-all: clipboard scopy spaste shistory certs
+
+all: clean clipboard scopy spaste shistory
 
 clipboard:
 	$(GO) build -o $(BINDIR)/clipboard ./server
@@ -42,8 +50,20 @@ certs_orig:
 		-subj "/C=US/ST=State/L=City/O=Organization/OU=Department/CN=localhost"
 	@echo "Certificates generated: server.key and server.crt"
 
+# generate $HOME/.clipboard/config.json file
+config:
+	@mkdir -p $(CONFIG_DIR)
+	@mkdir -p $(CERTS_DIR)
+	@echo '{' > $(CONFIG_FILE)
+	@echo '  "port": 14443,' >> $(CONFIG_FILE)
+	@echo '  "clipboard_size": 10,' >> $(CONFIG_FILE)
+	@echo '  "history_file": "$(HISTORY_FILE)",' >> $(CONFIG_FILE)
+	@echo '  "server_key": "$(CERTS_DIR)/server.key",' >> $(CONFIG_FILE)
+	@echo '  "server_cert": "$(CERTS_DIR)/server.crt"' >> $(CONFIG_FILE)
+	@echo '}' >> $(CONFIG_FILE)
+	@echo "Configuration created at $(CONFIG_FILE)"
+
 # Clean up build files
 clean:
-	rm -rf certs
 	rm -f $(BINDIR)/clipboard $(BINDIR)/scopy $(BINDIR)/spaste $(BINDIR)/shistory
 	rm -f server.key server.crt

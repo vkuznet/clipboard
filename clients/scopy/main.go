@@ -15,9 +15,15 @@ func main() {
 	data := flag.String("data", "", "Data to copy")
 	flag.Parse()
 
-	if *data == "" {
-		fmt.Println("Please provide data to copy using the -data flag")
-		return
+	// Handle positional arguments (data passed without -data flag)
+	var inputData string
+	if *data != "" {
+		inputData = *data
+	} else if len(flag.Args()) > 0 {
+		inputData = flag.Args()[0]
+	} else {
+		fmt.Println("No data provided")
+		os.Exit(1)
 	}
 
 	config, err := utils.LoadConfig(*configPath)
@@ -27,9 +33,8 @@ func main() {
 	}
 
 	client := utils.Client(config)
-	rurl := fmt.Sprintf("%s/copy?data=%s", utils.ServerUrl(config), url.QueryEscape(*data))
+	rurl := fmt.Sprintf("%s/copy?data=%s", utils.ServerUrl(config), url.QueryEscape(inputData))
 	resp, err := client.Get(rurl)
-	//     resp, err := http.Get(fmt.Sprintf("%s/copy?data=%s", *server, url.QueryEscape(*data)))
 	if err != nil {
 		fmt.Println("Error copying data:", err)
 		return
@@ -37,7 +42,7 @@ func main() {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
-		fmt.Println("Data successfully copied")
+		//         fmt.Println("Data successfully copied to secure clipboard")
 	} else {
 		fmt.Println("Failed to copy data:", resp.Status)
 	}

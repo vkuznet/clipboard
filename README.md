@@ -47,15 +47,26 @@ The application uses a configuration file to define its behavior. Example `confi
    make
    ```
 
-3. Generate self-signed certificates (if needed):
+3. If necessary generate your configuration
+   ```bash
+   make config
+   ```
+At this step inspect your configuration file at `$HOME/.clipboard/config.json`
+
+4. Generate self-signed certificates (if needed):
    ```bash
    make certs
    ```
+If necessary you may adjust your certifications in your `$HOME/.clipboard/config.json` as you like.
 
 ## Usage
 
 1. **Start the Server**:
    ```bash
+   # use default configuration from $HOME/.clipboard/config.json
+   ./clipboard
+
+   # use custom configuration file
    ./clipboard -config config.json
    ```
 
@@ -68,7 +79,11 @@ The application uses a configuration file to define its behavior. Example `confi
 3. **Paste Data**:
    Use the `spaste` client to retrieve data from the clipboard:
    ```bash
+   # paste latest item of secure clipboard
    ./spaste
+
+   # paste specific (in this example 4th) item from secure clipboard
+   ./spaste 4
    ```
 
 4. **View Clipboard History**:

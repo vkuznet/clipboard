@@ -15,6 +15,17 @@ func main() {
 	item := flag.String("item", "", "clipboard item")
 	flag.Parse()
 
+	// Handle positional arguments (data passed without -data flag)
+	var inputData string
+	if *item != "" {
+		inputData = *item
+	} else if len(flag.Args()) > 0 {
+		inputData = flag.Args()[0]
+	} else {
+		fmt.Println("No data provided")
+		os.Exit(1)
+	}
+
 	config, err := utils.LoadConfig(*configPath)
 	if err != nil {
 		fmt.Println("Error loading configuration:", err)
@@ -22,9 +33,8 @@ func main() {
 	}
 
 	client := utils.Client(config)
-	rurl := fmt.Sprintf("%s/paste?item=%s", utils.ServerUrl(config), *item)
+	rurl := fmt.Sprintf("%s/paste?item=%s", utils.ServerUrl(config), inputData)
 	resp, err := client.Get(rurl)
-	//     resp, err := http.Get(fmt.Sprintf("%s/paste", *server))
 	if err != nil {
 		fmt.Println("Error pasting data:", err)
 		return

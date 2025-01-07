@@ -34,21 +34,14 @@ certs: $(SERVER_KEY) $(SERVER_CRT)
 
 $(SERVER_KEY):
 	@mkdir -p $(CERT_DIR)
+	@echo "Generating self-signed certificates in $(CERT_DIR) with duration 36500 days ..."
 	openssl genrsa -out $(SERVER_KEY) 2048
 
 $(SERVER_CRT): $(SERVER_KEY)
 	@mkdir -p $(CERT_DIR)
-	openssl req -x509 -new -nodes -key $(SERVER_KEY) -sha256 -days 365 \
+	openssl req -x509 -new -nodes -key $(SERVER_KEY) -sha256 -days 36500 \
 		-out $(SERVER_CRT) -subj "/CN=localhost" \
 		-addext "subjectAltName=DNS:localhost,DNS:localhost/"/
-
-# Generate self-signed certificates
-certs_orig:
-	@echo "Generating self-signed certificates..."
-	openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-		-keyout server.key -out server.crt \
-		-subj "/C=US/ST=State/L=City/O=Organization/OU=Department/CN=localhost"
-	@echo "Certificates generated: server.key and server.crt"
 
 # generate $HOME/.clipboard/config.json file
 config:

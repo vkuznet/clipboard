@@ -16,15 +16,7 @@ func main() {
 	flag.Parse()
 
 	// Handle positional arguments (data passed without -data flag)
-	var inputData string
-	if *data != "" {
-		inputData = *data
-	} else if len(flag.Args()) > 0 {
-		inputData = flag.Args()[0]
-	} else {
-		fmt.Println("No data provided")
-		os.Exit(1)
-	}
+	inputData := utils.DataInput(*data)
 
 	config, err := utils.LoadConfig(*configPath)
 	if err != nil {

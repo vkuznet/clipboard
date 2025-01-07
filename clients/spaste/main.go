@@ -15,16 +15,8 @@ func main() {
 	item := flag.String("item", "", "clipboard item")
 	flag.Parse()
 
-	// Handle positional arguments (data passed without -data flag)
-	var inputData string
-	if *item != "" {
-		inputData = *item
-	} else if len(flag.Args()) > 0 {
-		inputData = flag.Args()[0]
-	} else {
-		fmt.Println("No data provided")
-		os.Exit(1)
-	}
+	// Handle positional arguments (data passed without -item flag)
+	inputData := utils.DataInput(*item)
 
 	config, err := utils.LoadConfig(*configPath)
 	if err != nil {
